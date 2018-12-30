@@ -1,5 +1,7 @@
 
-// RAY TRACING - example //
+var incX;
+var incY;
+var P0;
 
 // Inicialitzem el RayTracing
 function inicialitzar(Scene) {
@@ -130,6 +132,37 @@ function computeRay(incX,incY,P0,Cam,x,y){
 }
 
 
-function intersectarScene(Scene, cameraPosition, rDirection){
-	
+// interseccions de primitives
+
+function intersectPrimitive(Scene, primitive, rDirection){
+	switch(primitive.type) {
+		case "pla":
+			intersectPlane(Scene, primitive, rDirection)
+		  	break;
+		case "esfera":
+			intersectSphere(Scene, primitive, rDirection)
+		  	break;
+		case "triangle":
+			intersectTriangle(Scene, primitive, rDirection)
+			break;
+		default:
+		  	// code block
+	  }
+}
+
+
+function intersectPlane(Scene, primitive, rDirection){
+
+}
+
+function intersectSphere(Scene, primitive, rDirection){
+	let o = Scene.Camera.position;
+	let oMinusC = vec3.subtract(o, primitive.centre);
+	let b = vec3.dot(vec3.scale(oMinusC, 2), rDirection);
+	let c = vec3.dot(oMinusC, oMinusC) - (primitive.radi*primitive.radi);
+	let t0 = (-b - Math.sqrt(b*b -$*c))/2;
+	let t1 = (-b + Math.sqrt(b*b -$*c))/2;
+	//CAL REPASSAR
+	if (t0<0) return t1;
+	return t0;
 }
