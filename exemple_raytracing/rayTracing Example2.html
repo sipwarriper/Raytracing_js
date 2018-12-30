@@ -1,0 +1,106 @@
+
+
+<html>
+	<head>
+		<title>Ray Tracing Example</title>
+	</head>
+
+	<body>
+		<h1>Ray Tracing</h1>
+
+			<table>
+				<th>
+					<canvas id="glcanvas" style="border: solid;" width="400" height="400"></canvas>
+					<button onclick="start()"> Start </button>
+				</th>
+			</table>
+
+		<p style="text-indent:85px;">Cmera Position: [3, 3.5, 5]</p>
+
+		<script type="text/javascript" src="raytracing.js"></script>
+		<script src="gl-matrix/common.js"></script>
+		<script type="text/javascript" src="gl-matrix/vec3.js"></script>
+		<script type="text/javascript" src="gl-matrix/vec2.js"></script>
+		<script type="text/javascript" src="gl-matrix/vec4.js"></script>
+		<script type="text/javascript" src="gl-matrix/vec4.js"></script>
+		<script type="text/javascript" src="gl-matrix/mat4.js"></script>
+		<script type="text/javascript" src="gl-matrix/mat3.js"></script>
+		<script type="text/javascript" src="gl-matrix/quat.js"></script>
+
+		<script type="text/javascript">
+
+			function start () {
+				// Inicialitzem el RayTracing
+				inicialitzar(Scene);
+			}
+
+			var Screen = {
+				width 	: 0,
+				height 	: 0,
+				canvas 	: null,
+				context : null,
+				buffer 	: null,
+			};
+
+			var Scene = {
+				Fons: [0, 0, 0],
+				Shapes: [
+					{
+						id		: "pla_groc",
+						tipus	: "pla",
+						normal	: [0,1,0],
+						color	: [0.5,0.5,0],
+						reflex	: 0.6,
+						specular: 50,
+					},
+					{
+						id		: "pla_blau",
+						tipus	: "pla",
+						normal	: [0,0,1],
+						color	: [0.3,0.4,1],
+						reflex	: 0,
+						specular: 50,
+					},
+					{
+						id		: "esfera_blava",
+						tipus	: "esfera",
+						radi	: 1.5,
+						centre	: [-1.5,1.3,1],
+						color	: [0,0.7,0.7],
+						reflex	: 0.6,
+						specular: 50,
+					},
+					{
+						id		: "esfera_fucsia",
+						tipus	: "esfera",
+						radi	: 0.7,
+						centre	: [-1,0.5,3],
+						color	: [0.8,0,0.8],
+						reflex	: 0.6,
+						specular: 50,
+					},
+				],
+				Camera: {
+					position: [3,3.5,5], 	// posicio camera
+					up 		: [0,1,0], 		// vector amunt
+					centre  : [-1,0.5,0], 	// centre escena
+					fov 	: 60, 			// field of view
+					X		: vec3.create(),
+					Z		: vec3.create(),
+					Y		: vec3.create(),
+				},
+				Lights: [
+					{
+						position: vec3.create(), // S'emplena segons els valors entrats
+						color   : vec3.create(), // S'emplena segons els valors entrats
+					},
+					{
+						position: vec3.create(), // S'emplena segons els valors entrats
+						color   : vec3.create(), // S'emplena segons els valors entrats
+					},
+				]
+			};
+		</script>
+
+	</body>
+</html>
