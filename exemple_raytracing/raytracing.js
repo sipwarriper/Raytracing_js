@@ -174,8 +174,8 @@ function intersectSphere(Scene, primitive, rDirection){
 	let oMinusC = vec3.subtract(o, primitive.centre);
 	let b = vec3.dot(vec3.scale(oMinusC, 2), rDirection);
 	let c = vec3.dot(oMinusC, oMinusC) - (primitive.radi*primitive.radi);
-	let t0 = (-b - Math.sqrt(b*b -$*c))/2;
-	let t1 = (-b + Math.sqrt(b*b -$*c))/2;
+	let t0 = (-b - Math.sqrt(b*b -4*c))/2;
+	let t1 = (-b + Math.sqrt(b*b -4*c))/2;
 	//CAL REPASSAR
 	if (t0<0) return t1;
 	return t0;
