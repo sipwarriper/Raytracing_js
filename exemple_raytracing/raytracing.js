@@ -152,8 +152,22 @@ function intersectPrimitive(Scene, primitive, rDirection){
 
 
 function intersectPlane(Scene, primitive, rDirection){
-
+	return intersectPlaneWithData(Scene, primitive.normal, primitive.punt, rDirection);
 }
+
+
+function intersectPlaneWithData(Scene, normal, punt, rDirection){
+	let o = Scene.Camera.position;
+	let A = normal[0];
+	let B = normal[1];
+	let C = normal[2];
+	let D = 0-(A*punt[0] + B*punt[1] + C*punt[2]);
+	let t = (-D-vec3.dot(normal,o))/vec3.dot(normal,rDirection);
+	return t;
+}
+
+
+
 
 function intersectSphere(Scene, primitive, rDirection){
 	let o = Scene.Camera.position;
@@ -165,4 +179,33 @@ function intersectSphere(Scene, primitive, rDirection){
 	//CAL REPASSAR
 	if (t0<0) return t1;
 	return t0;
+}
+
+function intersectTriangle(Scene, primitive, rDirection){
+	let o = Scene.Camera.position;
+	//aixó es pot representar d'altres formes, nosaltres usarem punts. 
+	
+	let u = vec3.subtract(primitive.v1, primitive.v0);
+	let v = vec3.subtract(primitive.v2, primitive.v0);
+
+	//calcul interseccio pla
+
+	let normal = vec3.cross(u,v);
+
+	let tPla = intersectPlaneWithData(Scene,normal, primitive.v0, rDirection);
+	let P = vec3.scaleAndAdd(o, rDirection, tPla);
+
+	let I = vec3.subtract(P, primitive.v0);
+
+	// formules apunts
+	let UV = vec3.dot(u,v);
+	let UU = vec3.dot(u,v);
+	let VV = vec3.dot(v,v);
+	let D = UV*UV - UU*VV;
+	let t = (UV*vec3.dot(I,v) - VV*vec3.dot(I,u))/D;
+	let s = (UV*vec3.dot(I,v) - UU*vec3.dot(I,u))/D;
+
+	// hi ha intersecció if(0<=s+t && s+t<= 1)
+
+	return t;
 }
