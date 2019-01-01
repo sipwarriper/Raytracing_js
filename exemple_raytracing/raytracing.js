@@ -189,11 +189,18 @@ function computeIllumination(Scene, hit, rDirection){
 	I_g = Scene.AmbientLight[1];
 	I_b = Scene.AmbientLight[2];
 	for (let i = 0; i< Scene.Lights.length; i++){
-		let L = vec3.subtract(hit.p, Scene.Lights[i].position);
+		let L = vec3.subtract(Scene.Lights[i].position, hit.p);
+		let V = vec3.subtract(Scene.Camera.position, hit.p);
+		let r = vec3.add(L,V);
 		//Diffuse Reflection
 		I_r += Scene.Lights[i].diffuse[0]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
 		I_g += Scene.Lights[i].diffuse[1]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
 		I_b += Scene.Lights[i].diffuse[2]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
+		//
+		I_r += Scene.Lights[i].specular[0]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+		I_g += Scene.Lights[i].specular[1]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+		I_b += Scene.Lights[i].specular[2]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+
 	}
 	I_r *= hit.Shape.color[0]
 	I_g *= hit.Shape.color[1]
@@ -257,24 +264,31 @@ function intersectSphere(Scene, primitive, rDirection){
 function intersectTriangle(Scene, primitive, rDirection){
 	let o = Scene.Camera.position;
 	//aixó es pot representar d'altres formes, nosaltres usarem punts. 
-	
-	let u = vec3.subtract(primitive.v1, primitive.v0);
-	let v = vec3.subtract(primitive.v2, primitive.v0);
-
+	if(primitive.u == null){
+		primitive.u = vec3.subtract(primitive.v1, primitive.v0);
+		primitive.v = vec3.subtract(primitive.v2, primitive.v0);
+		primitive.UV = vec3.dot(primitive.u,primitive.v);
+		primitive.UU = vec3.dot(primitive.u,primitive.u);
+		primitive.VV = vec3.dot(primitive.v,primitive.v);
+		primitive.D = primitive.UV*primitive.UV - primitive.UU*primitive.VV;
+	}
 	//calcul interseccio pla
 
-	let normal = vec3.normalize(vec3.cross(u,v));
+	let u = primitive.u
+	let v = primitive.v
+	let UV = primitive.UV
+	let UU = primitive.UU
+	let VV = primitive.VV
+	let D = primitive.D
+
+	let normal = vec3.normalize(vec3.cross(v,u));
 
 	let tPla = intersectPlaneWithData(Scene,normal, primitive.v0, rDirection);
 	let P = vec3.scaleAndAdd(o, rDirection, tPla);
 
 	let I = vec3.subtract(P, primitive.v0);
 
-	// formules apunts
-	let UV = vec3.dot(u,v);
-	let UU = vec3.dot(u,u);
-	let VV = vec3.dot(v,v);
-	let D = UV*UV - UU*VV;
+
 	let t = (UV*vec3.dot(I,v) - VV*vec3.dot(I,u))/D;
 	let s = (UV*vec3.dot(I,u) - UU*vec3.dot(I,v))/D;
 
