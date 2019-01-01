@@ -108,9 +108,11 @@ function rayTracing(Scene, Screen) {
 	for(var x = 0; x < Screen.width; x++){
 		for (y = 0; y < Screen.height; y++){
 			var rDirection = computeRay(incX,incY,P0,Scene.Camera,x,y);
-			var color = [0.3,0.4,1];
+			//var color = [0.3,0.4,1];
 			// TO BE IMPLEMENTED
-			//var color = intersectarScene(Scene, Scene.Camera.position, rDirection);
+			// var t = intersectPrimitive(Scene, Scene.Shapes[1], rDirection);
+			// if (t<0) console.log("t = ".concat(String(t)));
+			var color = intersectarScene(Scene, Scene.Camera.position, rDirection);
 			plot(x,y,color);
 		}
 	}
@@ -135,16 +137,13 @@ function computeRay(incX,incY,P0,Cam,x,y){
 // interseccions de primitives
 
 function intersectPrimitive(Scene, primitive, rDirection){
-	switch(primitive.type) {
+	switch(primitive.tipus) {
 		case "pla":
-			intersectPlane(Scene, primitive, rDirection)
-		  	break;
+			return intersectPlane(Scene, primitive, rDirection);
 		case "esfera":
-			intersectSphere(Scene, primitive, rDirection)
-		  	break;
+			return intersectSphere(Scene, primitive, rDirection);
 		case "triangle":
-			intersectTriangle(Scene, primitive, rDirection)
-			break;
+			return intersectTriangle(Scene, primitive, rDirection);
 		default:
 		  	// code block
 	  }
@@ -176,6 +175,8 @@ function intersectSphere(Scene, primitive, rDirection){
 	let c = vec3.dot(oMinusC, oMinusC) - (primitive.radi*primitive.radi);
 	let t0 = (-b - Math.sqrt(b*b -4*c))/2;
 	let t1 = (-b + Math.sqrt(b*b -4*c))/2;
+	let d = b*b - 4*c;
+	//console.log("------- NO INTERSECCIO");
 	//CAL REPASSAR
 	if (t0<0) return t1;
 	return t0;
