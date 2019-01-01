@@ -196,7 +196,7 @@ function computeIllumination(Scene, hit, rDirection){
 		I_r += Scene.Lights[i].diffuse[0]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
 		I_g += Scene.Lights[i].diffuse[1]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
 		I_b += Scene.Lights[i].diffuse[2]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
-		//
+		//specular Ilumination
 		I_r += Scene.Lights[i].specular[0]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
 		I_g += Scene.Lights[i].specular[1]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
 		I_b += Scene.Lights[i].specular[2]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
@@ -281,7 +281,7 @@ function intersectTriangle(Scene, primitive, rDirection){
 	let VV = primitive.VV
 	let D = primitive.D
 
-	let normal = vec3.normalize(vec3.cross(v,u));
+	let normal = vec3.normalize(vec3.cross(u,v));
 
 	let tPla = intersectPlaneWithData(Scene,normal, primitive.v0, rDirection);
 	let P = vec3.scaleAndAdd(o, rDirection, tPla);
@@ -295,8 +295,5 @@ function intersectTriangle(Scene, primitive, rDirection){
 	// hi ha intersecció if(0<=s+t && s+t<= 1)
 	// si no hi ha intersecció tornem NaN
 	if(!((s+t)>=0 && (s+t)<=1 && t>0 && s>0)) t = NaN;
-	if (!isNaN(t) && t>0 && s>0){
-		console.log("ayy");
-	} 
 	return t;
 }
