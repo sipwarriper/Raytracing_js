@@ -6,6 +6,29 @@ var P0;
 // Inicialitzem el RayTracing
 function inicialitzar(Scene) {
 
+	//Camera
+	Scene.Camera.position = [
+		parseFloat(document.getElementById("CamX").value),
+		parseFloat(document.getElementById("CamY").value),
+		parseFloat(document.getElementById("CamZ").value)];
+	Scene.Camera.up = [
+		parseFloat(document.getElementById("UpX").value),
+		parseFloat(document.getElementById("UpY").value),
+		parseFloat(document.getElementById("UpZ").value)];
+	Scene.Camera.centre = [
+		parseFloat(document.getElementById("CentreX").value),
+		parseFloat(document.getElementById("CentreY").value),
+		parseFloat(document.getElementById("CentreZ").value)];
+	
+	Scene.Camera.fov = parseInt(document.getElementById("fov").value);
+	
+
+	var cam_info = "Camera Position: [".concat(String(Scene.Camera.position[0]), ", ", 
+												String(Scene.Camera.position[1]), ", ", 
+												String(Scene.Camera.position[2]), "]"); 
+	document.getElementById("Cam_info").innerHTML=cam_info;
+	//Camera Position: [3, 3.5, 5]
+
 	// Parametres de les llums
 	// Put it interactively
 	Scene.Lights[0].position = [

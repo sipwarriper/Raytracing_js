@@ -15,7 +15,7 @@
 				</th>
 			</table>
 
-		<p style="text-indent:85px;">Camera Position: [3, 3.5, 5]</p>
+		<p style="text-indent:85px;" id = "Cam_info"></p>
 
 		<script type="text/javascript" src="raytracing.js"></script>
 		<script type="text/javascript" src="Hit.js"></script>
@@ -124,6 +124,33 @@
 			};
 		</script>
 
+
+		<h2>Camera:</h2>
+
+		<table style="border: 0; padding: 10px;">
+			<tr>
+				<td><b>Position:</b>
+				<td>X: <input type="text" id="CamX" value="3.0" />
+				<td>Y: <input type="text" id="CamY" value="3.5" />
+				<td>Z: <input type="text" id="CamZ" value="5.0" />
+			</tr>
+			<tr>
+				<td><b>Up:</b>
+				<td>X: <input type="text" id="UpX" value="0.0" />
+				<td>Y: <input type="text" id="UpY" value="1.0" />
+				<td>Z: <input type="text" id="UpZ" value="0.0" />
+			</tr>
+			<tr>
+				<td><b>Centre:</b>
+				<td>X: <input type="text" id="CentreX" value="-1.0" />
+				<td>Y: <input type="text" id="CentreY" value="0.5" />
+				<td>Z: <input type="text" id="CentreZ" value="0.0" />
+			</tr>
+			<tr>
+				<td><b>Field of view:</b>
+				<td>fov: <input type="text" id="fov" value="60" />
+			</tr>
+		</table>
 
 		<h2>Llum 1</h2>
 
