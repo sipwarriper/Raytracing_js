@@ -2,11 +2,11 @@
 
 <html>
 	<head>
-		<title>Ray Tracing Example</title>
+		<title>Ray Tracing</title>
 	</head>
 
 	<body>
-		<h1>Ray Tracing</h1>
+		<h1>Ray Tracing: Ismael El Habri i Marc Cané </h1>
 
 			<table>
 				<th>
@@ -18,6 +18,7 @@
 		<p style="text-indent:85px;">Camera Position: [3, 3.5, 5]</p>
 
 		<script type="text/javascript" src="raytracing.js"></script>
+		<script type="text/javascript" src="Hit.js"></script>
 		<script src="gl-matrix/common.js"></script>
 		<script type="text/javascript" src="gl-matrix/vec3.js"></script>
 		<script type="text/javascript" src="gl-matrix/vec2.js"></script>
@@ -58,7 +59,7 @@
 						id		: "pla_blau",
 						tipus	: "pla",
 						normal	: [0,0,1],
-						punt 	: [10,10,10],
+						punt 	: [0,0,0],
 						color	: [0.3,0.4,1],
 						reflex	: 0,
 						specular: 50,
@@ -81,6 +82,16 @@
 						reflex	: 0.6,
 						specular: 50,
 					},
+					{
+						id		: "triangle_fucsia",
+						tipus	: "triangle",
+						v0		: [0.5,0.5,0],
+						v1		: [0.5,-0.5,1],
+						v2		: [0.5,-0.5,-1],
+						color	: [0.8,0,0.8],
+						reflex	: 0.6,
+						specular: 50,						
+					},
 				],
 				Camera: {
 					position: [3,3.5,5], 	// posicio camera
@@ -93,16 +104,81 @@
 				},
 				Lights: [
 					{
-						position: vec3.create(), // S'emplena segons els valors entrats
-						color   : vec3.create(), // S'emplena segons els valors entrats
+						position	: vec3.create(), // S'emplena segons els valors entrats
+						diffuse		: vec3.create(), 
+						specular	: vec3.create(), 
 					},
 					{
-						position: vec3.create(), // S'emplena segons els valors entrats
-						color   : vec3.create(), // S'emplena segons els valors entrats
+						position	: vec3.create(), // S'emplena segons els valors entrats
+						diffuse		: vec3.create(), 
+						specular	: vec3.create(), 
 					},
-				]
+				],
+				AmbientLight: vec3.create()
 			};
 		</script>
+
+
+		<h2>Llum 1</h2>
+
+		<table style="border: 0; padding: 10px;">
+			<tr>
+				<td><b>Location:</b>
+				<td>X: <input type="text" id="lightPositionX1" value="-1.0" />
+				<td>Y: <input type="text" id="lightPositionY1" value="2.0" />
+				<td>Z: <input type="text" id="lightPositionZ1" value="4.0" />
+			</tr>
+			<tr>
+				<td><b>Specular colour:</b>
+				<td>R: <input type="text" id="specularR1" value="0" />
+				<td>G: <input type="text" id="specularG1" value="0" />
+				<td>B: <input type="text" id="specularB1" value="0" />
+			</tr>
+			<tr>
+				<td><b>Diffuse colour:</b>
+				<td>R: <input type="text" id="diffuseR1" value="0" />
+				<td>G: <input type="text" id="diffuseG1" value="0" />
+				<td>B: <input type="text" id="diffuseB1" value="0" />
+			</tr>
+		</table>
+
+
+
+		<h2>Llum 2</h2>
+
+		<table style="border: 0; padding: 10px;">
+			<tr>
+				<td><b>Location:</b>
+				<td>X: <input type="text" id="lightPositionX2" value="1.0" />
+				<td>Y: <input type="text" id="lightPositionY2" value="4.0" />
+				<td>Z: <input type="text" id="lightPositionZ2" value="4.0" />
+			</tr>
+			<tr>
+				<td><b>Specular colour:</b>
+				<td>R: <input type="text" id="specularR2" value="0" />
+				<td>G: <input type="text" id="specularG2" value="0" />
+				<td>B: <input type="text" id="specularB2" value="0" />
+			</tr>
+			<tr>
+				<td><b>Diffuse colour:</b>
+				<td>R: <input type="text" id="diffuseR2" value="0" />
+				<td>G: <input type="text" id="diffuseG2" value="0" />
+				<td>B: <input type="text" id="diffuseB2" value="0" />
+			</tr>
+		</table>
+
+
+		<h2>Ambient light:</h2>
+
+		<table style="border: 0; padding: 10px;">
+			<tr>
+				<td><b>Colour:</b>
+				<td>R: <input type="text" id="ambientR" value="0.4" />
+				<td>G: <input type="text" id="ambientG" value="0.4" />
+				<td>B: <input type="text" id="ambientB" value="0.4" />
+			</tr>
+		</table>
+
 
 	</body>
 </html>
