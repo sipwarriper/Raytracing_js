@@ -217,7 +217,8 @@ function computeIllumination(Scene, o, hit){
 		
 		
 		let Vi = 1; //No intersecta amb res
-		let hit2 = computeIntersection(Scene, hit.p, L); //raig des del hit fins a la llum, mirem interseccions
+		let hitplus = vec3.add(hit.p, vec3.fromValues(0.001,0.001,0.001));
+		let hit2 = computeIntersection(Scene, hitplus, L); //raig des del hit fins a la llum, mirem interseccions
 		//var rDirection = computeRay(incX,incY,P0,Scene.Camera,x,y);
 		if(interaction(hit2) && hit2.t < vec3.distance(hit.p, Scene.Lights[i].position)){ //si choca amb algo hi ha ombra
 			//let distancehit2 = vec3.distance(Scene.Lights[i].position, hit2.p);
