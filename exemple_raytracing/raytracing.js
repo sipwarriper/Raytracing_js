@@ -187,15 +187,15 @@ function computeRay(incX,incY,P0,Cam,x,y){
 
 
 function intersectarScene(Scene, rDirection){
-	let hit = computeIntersection(Scene, rDirection);
-	if (interaction(hit)) return computeIllumination(Scene, hit);
+	let hit = computeIntersection(Scene, Scene.Camera.position, rDirection);
+	if (interaction(hit)) return computeIllumination(Scene, Scene.Camera.position, hit);
 	return Scene.Fons;
 }
 
-function computeIntersection(Scene, rDirection){
+function computeIntersection(Scene, o, rDirection){
 	var h = null;
 	for (let i = 0; i<Scene.Shapes.length; i++){
-		var h2 = intersectPrimitive(Scene, Scene.Shapes[i], rDirection);
+		var h2 = intersectPrimitive(Scene, o, Scene.Shapes[i], rDirection);
 		if ((h==null || h2.t<h.t) && h2.t>0 && !isNaN(h2.t)){
 			h = h2;
 		}
@@ -204,7 +204,7 @@ function computeIntersection(Scene, rDirection){
 }
 
 
-function computeIllumination(Scene, hit){
+function computeIllumination(Scene, o, hit){
 	// I = Ambient * constantAmbient + sumatori per cada llum (colorllum_i * difusió * cos(angle llum, normal) + colorllum_i * specular * cos^n(un altre angle q no se))
 	// els angles es poden simplifcar
 	I_r = Scene.AmbientLight[0];
@@ -212,15 +212,17 @@ function computeIllumination(Scene, hit){
 	I_b = Scene.AmbientLight[2];
 	for (let i = 0; i< Scene.Lights.length; i++){
 		let L = vec3.normalize(vec3.subtract(Scene.Lights[i].position, hit.p));
-		let V = vec3.normalize(vec3.subtract(Scene.Camera.position, hit.p));
+		let V = vec3.normalize(vec3.subtract(o, hit.p));
 		let r = vec3.add(L,V);
-		let Vi = 1; //No intersecta amb res
-		let hit2 = computeIntersection(Scene, L); //raig des del hit fins a la llum, mirem interseccions
-		//var rDirection = computeRay(incX,incY,P0,Scene.Camera,x,y);
 		
-		if(interaction(hit2)){ //si choca amb algo hi ha ombra
-			let distancehit2 = vec3.distance(Scene.Lights[i].position, hit2.p);
-			Vi = (distancehit2 <= vec3.distance(Scene.Lights[i].position, hit.p) ? 0 : 1);	
+		
+		let Vi = 1; //No intersecta amb res
+		let hit2 = computeIntersection(Scene, hit.p, L); //raig des del hit fins a la llum, mirem interseccions
+		//var rDirection = computeRay(incX,incY,P0,Scene.Camera,x,y);
+		if(interaction(hit2) && hit2.t < vec3.distance(hit.p, Scene.Lights[i].position)){ //si choca amb algo hi ha ombra
+			//let distancehit2 = vec3.distance(Scene.Lights[i].position, hit2.p);
+			// Vi = (hit2.t < vec3.distance(hit.p, Scene.Lights[i].position) ? 0 : 1);	
+			Vi = 0;
 		}
 		
 		//Diffuse Reflection
@@ -248,32 +250,31 @@ function interaction(hit){
 
 // interseccions de primitives
 
-function intersectPrimitive(Scene, primitive, rDirection){
+function intersectPrimitive(Scene, o, primitive, rDirection){
 	let t;
 	switch(primitive.tipus) {
 		case "pla":
-			t = intersectPlane(Scene, primitive, rDirection);
-			return  new Hit(primitive, Scene.Camera.position, t, rDirection);
+			t = intersectPlane(Scene, o, primitive, rDirection);
+			return  new Hit(primitive, o, t, rDirection);
 		case "esfera":
-			t = intersectSphere(Scene, primitive, rDirection);
-			return new Hit(primitive, Scene.Camera.position, t, rDirection);
+			t = intersectSphere(Scene, o, primitive, rDirection);
+			return new Hit(primitive, o, t, rDirection);
 		case "triangle":
 			//let ts = intersectTriangle(Scene, primitive, rDirection);
-			t = intersectTriangle(Scene, primitive, rDirection);
-			return new Hit(primitive, Scene.Camera.position, t, rDirection);
+			t = intersectTriangle(Scene, o, primitive, rDirection);
+			return new Hit(primitive, o, t, rDirection);
 		default:
 		  	// code block
 	}
 }
 
 
-function intersectPlane(Scene, primitive, rDirection){
-	return intersectPlaneWithData(Scene, primitive.normal, primitive.punt, rDirection);
+function intersectPlane(Scene, o, primitive, rDirection){
+	return intersectPlaneWithData(Scene, o, primitive.normal, primitive.punt, rDirection);
 }
 
 
-function intersectPlaneWithData(Scene, normal, punt, rDirection){
-	let o = Scene.Camera.position;
+function intersectPlaneWithData(Scene, o, normal, punt, rDirection){
 	let A = normal[0];
 	let B = normal[1];
 	let C = normal[2];
@@ -282,8 +283,7 @@ function intersectPlaneWithData(Scene, normal, punt, rDirection){
 	return t;
 }
 
-function intersectSphere(Scene, primitive, rDirection){
-	let o = Scene.Camera.position;
+function intersectSphere(Scene,o, primitive, rDirection){
 	let oMinusC = vec3.subtract(o, primitive.centre);
 	let b = vec3.dot(vec3.scale(oMinusC, 2), rDirection);
 	let c = vec3.dot(oMinusC, oMinusC) - (primitive.radi*primitive.radi);
@@ -297,8 +297,7 @@ function intersectSphere(Scene, primitive, rDirection){
 	return t0;
 }
 
-function intersectTriangle(Scene, primitive, rDirection){
-	let o = Scene.Camera.position;
+function intersectTriangle(Scene, o, primitive, rDirection){
 	//aixó es pot representar d'altres formes, nosaltres usarem punts. 
 	if(primitive.u == null){
 		primitive.u = vec3.subtract(primitive.v1, primitive.v0);
@@ -319,7 +318,7 @@ function intersectTriangle(Scene, primitive, rDirection){
 
 	let normal = vec3.normalize(vec3.cross(u,v));
 
-	let tPla = intersectPlaneWithData(Scene,normal, primitive.v0, rDirection);
+	let tPla = intersectPlaneWithData(Scene, o, normal, primitive.v0, rDirection);
 	let P = vec3.scaleAndAdd(o, rDirection, tPla);
 
 	let I = vec3.subtract(P, primitive.v0);
