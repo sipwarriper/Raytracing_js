@@ -42,12 +42,12 @@ class Hit{
         let normal = this.Shape.normal;
         let trans = mat4.create();
         trans = mat4.translate(trans, trans, this.p);
-        this.n = vec3.transformMat4(normal, trans);        
+        this.n = vec3.normalize(vec3.transformMat4(normal, trans));        
     }
 
     calculateNormalSphere(){
         let pSUBc = vec3.subtract(this.p, this.Shape.centre);
-        this.n = vec3.scale(pSUBc, 1/this.Shape.radi);
+        this.n = vec3.normalize(vec3.scale(pSUBc, 1/this.Shape.radi));
     }
 
     calculateNormalTriangle(){
@@ -56,7 +56,7 @@ class Hit{
         let normal = vec3.normalize(vec3.cross(u,v));
         let trans = mat4.create();
         trans = mat4.translate(trans, trans, this.p);
-        this.n = vec3.transformMat4(normal, trans);
+        this.n = vec3.normalize(vec3.transformMat4(normal, trans));
     }
 
 } 
