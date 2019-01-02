@@ -231,9 +231,9 @@ function computeIllumination(Scene, o, hit){
 		I_g += Vi*Scene.Lights[i].diffuse[1]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
 		I_b += Vi*Scene.Lights[i].diffuse[2]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
 		//specular Ilumination
-		I_r += Vi*Scene.Lights[i].specular[0]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
-		I_g += Vi*Scene.Lights[i].specular[1]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
-		I_b += Vi*Scene.Lights[i].specular[2]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+		I_r += Vi*hit.Shape.reflex*Scene.Lights[i].specular[0]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+		I_g += Vi*hit.Shape.reflex*Scene.Lights[i].specular[1]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+		I_b += Vi*hit.Shape.reflex*Scene.Lights[i].specular[2]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
 
 	}
 	I_r *= hit.Shape.color[0]
