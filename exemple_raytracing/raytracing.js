@@ -184,7 +184,7 @@ function computeRay(incX,incY,P0,Cam,x,y){
 	var ray = vec3.subtract(aux4,Cam.position); // Obtenim raig (P0 + Increment de X * x - Increment de Y * y - O)
 	var rayNorm = vec3.normalize(ray); // Normalitzem el raig
 
-	return rayNorm;
+	return new Ray(rayNorm, 1);
 }
 
 
@@ -197,7 +197,7 @@ function intersectarScene(Scene, o, rDirection, depth){
 function computeIntersection(Scene, o, rDirection){
 	var h = null;
 	for (let i = 0; i<Scene.Shapes.length; i++){
-		var h2 = intersectPrimitive(Scene, o, Scene.Shapes[i], rDirection);
+		var h2 = intersectPrimitive(Scene, o, Scene.Shapes[i], rDirection.r);
 		if ((h==null || h2.t<h.t) && h2.t>0 && !isNaN(h2.t)){
 			h = h2;
 		}
@@ -209,9 +209,9 @@ function computeIntersection(Scene, o, rDirection){
 function computeIllumination(Scene, o, hit, rDirection, depth){
 	// I = Ambient * constantAmbient + sumatori per cada llum (colorllum_i * difusió * cos(angle llum, normal) + colorllum_i * specular * cos^n(un altre angle q no se))
 	// els angles es poden simplifcar
-	I_r = Scene.AmbientLight[0];
-	I_g = Scene.AmbientLight[1];
-	I_b = Scene.AmbientLight[2];
+	I_r = hit.Shape.color[0]*Scene.AmbientLight[0];
+	I_g = hit.Shape.color[1]*Scene.AmbientLight[1];
+	I_b = hit.Shape.color[2]*Scene.AmbientLight[2];
 	let hitplus = vec3.add(hit.p, [0.001,0.001,0.001]);
 
 	for (let i = 0; i< Scene.Lights.length; i++){
@@ -221,7 +221,7 @@ function computeIllumination(Scene, o, hit, rDirection, depth){
 		
 		
 		let Vi = 1; //No intersecta amb res
-		let hit2 = computeIntersection(Scene, hitplus, L); //raig des del hit fins a la llum, mirem interseccions
+		let hit2 = computeIntersection(Scene, hitplus, new Ray(L, rDirection.refraction)); //raig des del hit fins a la llum, mirem interseccions
 		//var rDirection = computeRay(incX,incY,P0,Scene.Camera,x,y);
 		if(interaction(hit2) && hit2.t < vec3.distance(hit.p, Scene.Lights[i].position)){ //si choca amb algo hi ha ombra
 			//let distancehit2 = vec3.distance(Scene.Lights[i].position, hit2.p);
@@ -230,17 +230,17 @@ function computeIllumination(Scene, o, hit, rDirection, depth){
 		}
 		
 		//Diffuse Reflection
-		I_r += Vi*Scene.Lights[i].diffuse[0]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
-		I_g += Vi*Scene.Lights[i].diffuse[1]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
-		I_b += Vi*Scene.Lights[i].diffuse[2]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
+		I_r += Vi*hit.Shape.color[0]*Scene.Lights[i].diffuse[0]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
+		I_g += Vi*hit.Shape.color[1]*Scene.Lights[i].diffuse[1]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
+		I_b += Vi*hit.Shape.color[2]*Scene.Lights[i].diffuse[2]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
 		//specular Ilumination
 		// I_r += Vi*hit.Shape.reflex*Scene.Lights[i].specular[0]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
 		// I_g += Vi*hit.Shape.reflex*Scene.Lights[i].specular[1]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
 		// I_b += Vi*hit.Shape.reflex*Scene.Lights[i].specular[2]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
 		
-		I_r += Vi*Scene.Lights[i].specular[0]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
-		I_g += Vi*Scene.Lights[i].specular[1]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
-		I_b += Vi*Scene.Lights[i].specular[2]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+		I_r += Vi*hit.Shape.color[0]*Scene.Lights[i].specular[0]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+		I_g += Vi*hit.Shape.color[1]*Scene.Lights[i].specular[1]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+		I_b += Vi*hit.Shape.color[2]*Scene.Lights[i].specular[2]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
 	}
 	//Inici la gran Traycejada
 	I =  [I_r, I_g, I_b];	
@@ -249,41 +249,62 @@ function computeIllumination(Scene, o, hit, rDirection, depth){
 		if(hit.Shape.reflex != 0){
 			let r1 = computeReflectionDirection(rDirection, hit);
 			let I_reflection = vec3.scale(intersectarScene(Scene, hitplus, r1, depth), hit.Shape.reflex);
-			I = vec3.add(I, I_reflection);
+			I = vec3.add(I, vec3.multiply(I_reflection, hit.Shape.color));
 
 		}
 		if (hit.Shape.refraction != 0){
 			let r2 = computeRefractionDirection(rDirection, hit);
-			let I_refraction = vec3.scale(intersectarScene(Scene, hitplus, r2, depth), hit.Shape.refraction);
-	
-			I = vec3.add(I, I_refraction);
+			let I_refraction = vec3.scale(intersectarScene(Scene, hitplus, r2, depth), 1-hit.Shape.reflex);
+			I = vec3.add(I, vec3.multiply(I_refraction, hit.Shape.color))
 		}
-	}	
+	}
 	//Fi la gran traycejada
-	I[0] *= hit.Shape.color[0];
-	I[1] *= hit.Shape.color[1];
-	I[2] *= hit.Shape.color[2];
+	// I[0] *= hit.Shape.color[0];
+	// I[1] *= hit.Shape.color[1];
+	// I[2] *= hit.Shape.color[2];
 	
 	return I;
 }
 
 
 function computeReflectionDirection(rDirection, hit){
-	let rd = vec3.dot(rDirection, hit.n);
-	return vec3.subtract(rDirection, vec3.scale(hit.n, 2*rd));
+	let rd = vec3.dot(rDirection.r, hit.n);
+	return new Ray(vec3.normalize(vec3.subtract(rDirection.r, vec3.scale(hit.n, 2*rd))), rDirection.refraction);
 }
 
 function computeRefractionDirection(rDirection, hit){
 	// d2  =  n1/(-n1)*(r + n*cos(angle)) - arrel( 1- sinus(angle)^2 (n1^2/-n2^2))*n
-	let n = hit.n;
-	let n2 = 1;
+	let normal = hit.n;
+	let n2 = rDirection.refraction;
 	let n1 = hit.Shape.refraction;
-
-	let cosinus = vec3.dot(rDirection,n)/(vec3.length(n)*vec3.length(rDirection));
-	let sinusQuadrat = 1 - cosinus*cosinus;
-	let block1 = vec3.scale(vec3.scaleAndAdd(rDirection, n, cosinus), n1/n2);
-	let block2 = vec3.scale(n, Math.sqrt(1 - sinusQuadrat * ((n1*n1)/(n2*n2))));
-	return vec3.subtract(block1,block2);
+	let cosI = vec3.dot(rDirection.r, normal)/(vec3.length(normal)*vec3.length(rDirection.r));
+	if (cosI> 0){
+		n1 = 1;
+		n2 = hit.Shape.refraction;
+		normal = vec3.negate(normal);
+	}
+	else{
+		n1 = hit.Shape.refraction;
+		n2 = 1.0;
+		cosI = -cosI;
+	}
+	let n = n1/n2;
+	let sinT2 = n*n * (1.0 - cosI * cosI);
+	let cosT = Math.sqrt(1.0 - sinT2);
+	    //fresnel equations
+	let rn = (n1 * cosI - n2 * cosT)/(n1 * cosI + n2 * cosT);
+	let rt = (n2 * cosI - n1 * cosT)/(n2 * cosI + n2 * cosT);
+	
+	n *= rn;
+    rt *= rt;
+    if(n == 1.0) return rDirection;
+    if(cosT*cosT < 0.0)//tot inner refl
+    {
+        return computeReflectionDirection(rDirection, hit);
+	}
+	let block1 = vec3.scale(rDirection.r, n);
+	let block2 = vec3.scale(normal, n*cosI - cosT)
+	return new Ray(vec3.normalize(vec3.add(block1,block2)), n1);
 }
 
 
@@ -298,6 +319,9 @@ function interaction(hit){
 // interseccions de primitives
 
 function intersectPrimitive(Scene, o, primitive, rDirection){
+	if (rDirection instanceof Ray){
+		console.log("malalt");
+	}
 	let t;
 	switch(primitive.tipus) {
 		case "pla":
