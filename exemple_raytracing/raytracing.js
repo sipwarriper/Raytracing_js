@@ -209,53 +209,55 @@ function computeIntersection(Scene, o, rDirection){
 function computeIllumination(Scene, o, hit, rDirection, depth){
 	// I = Ambient * constantAmbient + sumatori per cada llum (colorllum_i * difusió * cos(angle llum, normal) + colorllum_i * specular * cos^n(un altre angle q no se))
 	// els angles es poden simplifcar
+	// I_r = Scene.AmbientLight[0];
+	// I_g = Scene.AmbientLight[1];
+	// I_b = Scene.AmbientLight[2];
 	I_r = hit.Shape.color[0]*Scene.AmbientLight[0];
 	I_g = hit.Shape.color[1]*Scene.AmbientLight[1];
 	I_b = hit.Shape.color[2]*Scene.AmbientLight[2];
 	let hitplus = vec3.add(hit.p, [0.001,0.001,0.001]);
+	let inShadow = false;
 
 	for (let i = 0; i< Scene.Lights.length; i++){
 		let L = vec3.normalize(vec3.subtract(Scene.Lights[i].position, hit.p));
 		let V = vec3.normalize(vec3.subtract(o, hit.p));
 		let r = vec3.add(L,V);
-		
-		
-		let Vi = 1; //No intersecta amb res
+
 		let hit2 = computeIntersection(Scene, hitplus, new Ray(L, rDirection.refraction)); //raig des del hit fins a la llum, mirem interseccions
 		//var rDirection = computeRay(incX,incY,P0,Scene.Camera,x,y);
-		if(interaction(hit2) && hit2.t < vec3.distance(hit.p, Scene.Lights[i].position)){ //si choca amb algo hi ha ombra
-			//let distancehit2 = vec3.distance(Scene.Lights[i].position, hit2.p);
-			// Vi = (hit2.t < vec3.distance(hit.p, Scene.Lights[i].position) ? 0 : 1);	
-			Vi = 0;
+		if(!(interaction(hit2) && hit2.t < vec3.distance(hit.p, Scene.Lights[i].position))){ //si choca amb algo hi ha ombra
+			//Diffuse Reflection
+			I_r += hit.Shape.color[0]*Scene.Lights[i].diffuse[0]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
+			I_g += hit.Shape.color[1]*Scene.Lights[i].diffuse[1]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
+			I_b += hit.Shape.color[2]*Scene.Lights[i].diffuse[2]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
+			//specular Ilumination
+			I_r += hit.Shape.color[0]*hit.Shape.reflex*Scene.Lights[i].specular[0]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+			I_g += hit.Shape.color[1]*hit.Shape.reflex*Scene.Lights[i].specular[1]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+			I_b += hit.Shape.color[2]*hit.Shape.reflex*Scene.Lights[i].specular[2]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+			
+			// I_r += Scene.Lights[i].specular[0]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+			// I_g += Scene.Lights[i].specular[1]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+			// I_b += Scene.Lights[i].specular[2]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
+		
 		}
 		
-		//Diffuse Reflection
-		I_r += Vi*hit.Shape.color[0]*Scene.Lights[i].diffuse[0]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
-		I_g += Vi*hit.Shape.color[1]*Scene.Lights[i].diffuse[1]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
-		I_b += Vi*hit.Shape.color[2]*Scene.Lights[i].diffuse[2]*Math.max(vec3.dot(L, hit.n)/(vec3.length(L)*vec3.length(hit.n)), 0);
-		//specular Ilumination
-		// I_r += Vi*hit.Shape.reflex*Scene.Lights[i].specular[0]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
-		// I_g += Vi*hit.Shape.reflex*Scene.Lights[i].specular[1]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
-		// I_b += Vi*hit.Shape.reflex*Scene.Lights[i].specular[2]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
-		
-		I_r += Vi*hit.Shape.color[0]*Scene.Lights[i].specular[0]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
-		I_g += Vi*hit.Shape.color[1]*Scene.Lights[i].specular[1]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
-		I_b += Vi*hit.Shape.color[2]*Scene.Lights[i].specular[2]*Math.pow(Math.max(vec3.dot(r, hit.n)/(vec3.length(r)*vec3.length(hit.n)), 0),hit.Shape.specular);
-	}
+}
 	//Inici la gran Traycejada
 	I =  [I_r, I_g, I_b];	
 	if(depth<MAX_DEPTH){
 		depth++;
 		if(hit.Shape.reflex != 0){
 			let r1 = computeReflectionDirection(rDirection, hit);
-			let I_reflection = vec3.scale(intersectarScene(Scene, hitplus, r1, depth), hit.Shape.reflex);
+			let I_reflection = vec3.scale(intersectarScene(Scene, vec3.add(hitplus, r1.r), r1, depth), hit.Shape.reflex);
 			I = vec3.add(I, vec3.multiply(I_reflection, hit.Shape.color));
+			// I = vec3.add(I, I_reflection);
 
 		}
 		if (hit.Shape.refraction != 0){
 			let r2 = computeRefractionDirection(rDirection, hit);
-			let I_refraction = vec3.scale(intersectarScene(Scene, hitplus, r2, depth), 1-hit.Shape.reflex);
-			I = vec3.add(I, vec3.multiply(I_refraction, hit.Shape.color))
+			let I_refraction = vec3.scale(intersectarScene(Scene, vec3.add(hitplus, r2.r), r2, depth), 1-hit.Shape.reflex);
+			I = vec3.add(I, vec3.multiply(I_refraction, hit.Shape.color));
+			// I = vec3.add(I, I_refraction);
 		}
 	}
 	//Fi la gran traycejada
@@ -275,17 +277,18 @@ function computeReflectionDirection(rDirection, hit){
 function computeRefractionDirection(rDirection, hit){
 	// d2  =  n1/(-n1)*(r + n*cos(angle)) - arrel( 1- sinus(angle)^2 (n1^2/-n2^2))*n
 	let normal = hit.n;
-	let n2 = rDirection.refraction;
-	let n1 = hit.Shape.refraction;
+	let n2 = 0;
+	let n1 = 0;
 	let cosI = vec3.dot(rDirection.r, normal)/(vec3.length(normal)*vec3.length(rDirection.r));
-	if (cosI> 0){
-		n1 = 1;
-		n2 = hit.Shape.refraction;
+	if (cosI > 0){
+		//dins del cos
+		n2 = 1;
+		n1 = hit.Shape.refraction;
 		normal = vec3.negate(normal);
 	}
 	else{
-		n1 = hit.Shape.refraction;
-		n2 = 1.0;
+		n2 = hit.Shape.refraction;
+		n1 = 1.0;
 		cosI = -cosI;
 	}
 	let n = n1/n2;
