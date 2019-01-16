@@ -3,7 +3,7 @@ var incX;
 var incY;
 var P0;
 
-var MAX_DEPTH = 0;
+var MAX_DEPTH = 3;
 
 // Inicialitzem el RayTracing
 function inicialitzar(Scene) {
