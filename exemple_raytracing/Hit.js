@@ -55,7 +55,7 @@ class Hit{
         let v = this.Shape.v;
         let normal = vec3.normalize(vec3.cross(u,v));
         let trans = mat4.create();
-        trans = mat4.translate(trans, trans, this.p);
+        mat4.translate(trans, trans, this.p);
         this.n = vec3.normalize(vec3.transformMat4(normal, trans));
     }
 

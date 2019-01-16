@@ -35,6 +35,29 @@
 				// Inicialitzem el RayTracing
 				inicialitzar(Scene);
 			}
+			
+			document.addEventListener('keydown', function(event) {
+				var posicio = Scene.Camera.position;
+				let pas = 1;
+				if(event.keyCode == 37) { //left
+					Scene.Camera.position[0]-=pas;
+					posicio-=pas;
+					//Scene.Camera.position=posicio;
+					Run();
+				}
+				else if(event.keyCode == 39) { //right
+					Scene.Camera.position[0]+=pas;
+					Run();
+				}
+				if(event.keyCode == 38) { //up
+					Scene.Camera.position[1]+=pas;
+					Run();
+				}
+				else if(event.keyCode == 40) { //down
+					Scene.Camera.position[1]-=pas;
+					Run();
+				}
+			});
 
 			var Screen = {
 				width 	: 0,

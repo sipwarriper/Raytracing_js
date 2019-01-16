@@ -3,7 +3,7 @@ var incX;
 var incY;
 var P0;
 
-var MAX_DEPTH = 3;
+var MAX_DEPTH = 0;
 
 // Inicialitzem el RayTracing
 function inicialitzar(Scene) {
@@ -80,7 +80,11 @@ function inicialitzar(Scene) {
 	Screen.width = Screen.canvas.width;
 	Screen.height = Screen.canvas.height;
 	Screen.buffer = Screen.context.createImageData(Screen.width,Screen.height);
+	
+	Run();
+};
 
+function Run(){
 	// Calculem els eixos de la camera
 	calcularEixos(Scene);
 
@@ -92,7 +96,7 @@ function inicialitzar(Scene) {
 	// Executem RayTracing
 	rayTracing(Scene, Screen);
 	Screen.context.putImageData(Screen.buffer, 0, 0);
-};
+}
 
 
 // Calcular increment de X
@@ -322,9 +326,6 @@ function interaction(hit){
 // interseccions de primitives
 
 function intersectPrimitive(Scene, o, primitive, rDirection){
-	if (rDirection instanceof Ray){
-		console.log("malalt");
-	}
 	let t;
 	switch(primitive.tipus) {
 		case "pla":
@@ -352,7 +353,7 @@ function intersectPlaneWithData(Scene, o, normal, punt, rDirection){
 	let A = normal[0];
 	let B = normal[1];
 	let C = normal[2];
-	let D = 0-(A*punt[0] + B*punt[1] + C*punt[2]);
+	let D = -(A*punt[0] + B*punt[1] + C*punt[2]);
 	let t = (-D-vec3.dot(normal,o))/vec3.dot(normal,rDirection);
 	return t;
 }
